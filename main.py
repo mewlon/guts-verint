@@ -125,14 +125,16 @@ class Game:
     def draw(self):
         # game loop - draw
 
-        rel_x = self.x_bkgd % self.bkgd.get_rect().width
-        #display the background into the game
-        self.screen.blit(self.bkgd, (rel_x - self.x_bkgd % self.bkgd.get_rect().width, 0))
-        if rel_x < self.SCREEN_WIDTH:
-            self.screen.blit(self.bkgd, (rel_x, 0))
-        #move the background towards the left so that the player moves right
-        pg.draw.line(self.screen, (255, 0, 0), (rel_x, 0), (rel_x, self.SCREEN_HEIGHT), 3)
+        # game scrolling background
+        self.screen.fill((0, 0, 0))
+        self.screen.blit(self.bkgd, (self.x_bkgd, 0))
+        self.screen.blit(self.bkgd, (self.SCREEN_WIDTH + self.x_bkgd, 0))
+
+        if self.x_bkgd == -self.SCREEN_WIDTH:
+            self.screen.blit(self.bkgd, (self.SCREEN_WIDTH + self.x_bkgd, 0))
+            self.x_bkgd = 0
         self.x_bkgd -= 1
+
         self.all_sprites.draw(self.screen)
         pg.display.update()
 
