@@ -10,7 +10,7 @@ class Game:
         pg.mixer.init()
 
         # Set up the drawing window
-        self.screen = pg.display.set_mode((800, 600))
+        self.screen = pg.display.set_mode((1280, 720))
         #screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
         # Define constants for the screen width and height
@@ -27,7 +27,7 @@ class Game:
 
         # Setup the clock
         self.clock = pg.time.Clock()
-        self.FPS = 60
+        self.FPS = 90
 
         # load the background
         self.bkgd = pg.image.load("Images/parallax-mountain-bg.png").convert()
