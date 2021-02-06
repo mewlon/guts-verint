@@ -31,8 +31,10 @@ class Player(pg.sprite.Sprite):
         self.BALL_FRICTION = -0.12
         self.BALL_GRAVITY = 0.8
 
-        self.jump = False
-        self.jumpCount = 10
+        self.BALL_JUMP = -20
+        self.BALL_JUMP_CUT = -5
+        self.jumping = False
+
 
     # Move the sprite based on user keypresses
     def update(self):
@@ -46,8 +48,6 @@ class Player(pg.sprite.Sprite):
             self.acc.x = -self.BALL_ACC
         if pressed_keys[pg.K_RIGHT]:
             self.acc.x = self.BALL_ACC
-        if pressed_keys[pg.K_UP]:
-            self.vel.y = -20
 
         #apply friction
         self.acc.x += self.vel.x * self.BALL_FRICTION
@@ -66,13 +66,32 @@ class Player(pg.sprite.Sprite):
             self.pos.y = self.SCREEN_HEIGHT-32
 
         #Update the position of the ball
-        self.rect.center = self.pos
+        self.rect.midbottom = self.pos
 
     def jump(self):
-        #self.rect.x += 1
-        #hits = pg.sprite.spritecollide(self, self.game.platforms, False)
-        #self.rect.x -= 1
-        #if hits:
-        self.vel.y = -20
+
+        self.rect.x += 1
+        hits = pg.sprite.spritecollide(self, self.game.platforms, False)
+        self.rect.x -= 1
+
+        if hits and not self.jumping:
+            self.jumping = True
+            self.vel.y = self.BALL_JUMP
+    
+    def jump_cut(self):
+        if self.jumping:
+            if self.vel.y < self.BALL_JUMP_CUT:
+                self.vel.y = self.BALL_JUMP_CUT
+
+class Platform(pg.sprite.Sprite):
+    def __init__(self, x, y, w, h):
+        pg.sprite.Sprite.__init__(self)
+        self.image = pg.Surface((w, h))
+        self.image.fill((255,255,0))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+
 
 

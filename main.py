@@ -1,6 +1,8 @@
 import pygame as pg
+import os
 import random
 from sprites import *
+
 
 class Game:
     def __init__(self):
@@ -18,7 +20,7 @@ class Game:
 
         #Title and Icon
         pg.display.set_caption("Save A Ball")
-        icon = pg.image.load('Images/ball-icon.png')
+        icon = pg.image.load(os.path.join("Images", "ball-icon.png"))
         pg.display.set_icon(icon)
 
         # Setup the clock
@@ -26,15 +28,26 @@ class Game:
         self.FPS = 60
 
         self.running = True
-        
 
     def new(self):
         # start a new game
 
         self.all_sprites = pg.sprite.Group()
-        #Create and Add player to all_sprites group
+        self.platforms = pg.sprite.Group()
+
+        # Create and Add player to all_sprites group
         self.player = Player(self)
         self.all_sprites.add(self.player)
+
+        # create a list of platform
+        self.platform_list = [(0, self.SCREEN_HEIGHT - 40, self.SCREEN_WIDTH, 40),
+                              (self.SCREEN_WIDTH/2 - 50, self.SCREEN_HEIGHT*3/4, 100, 20)]
+
+        for plat in self.platform_list:
+            p = Platform(*plat)
+            self.all_sprites.add(p)
+            self.platforms.add(p)
+
         self.run()
 
     def run(self):
@@ -45,25 +58,46 @@ class Game:
             self.events()
             self.update()
             self.draw()
-            
 
     def update(self):
         # game loop - update
         self.all_sprites.update()
 
+        # check if the ball, while falling, hits the platform
+        if self.player.vel.y > 0:
+            hits = pg.sprite.spritecollide(self.player, self.platforms, False)
+            if hits:
+                lowest = hits[0]
+                for hit in hits:
+                    if hit.rect.bottom > lowest.rect.bottom:
+                        lowest = hit
+                if self.player.pos.y < lowest.rect.bottom:
+                    self.player.pos.y = lowest.rect.top
+                    self.player.vel.y = 0
+                    self.player.jumping = False
+
     def events(self):
         # game loop - events
-        
+
         for event in pg.event.get():
-            #check for cosing window
+            # check for cosing window
             if event.type == pg.QUIT:
                 if self.playing:
                     self.playing = False
                 self.running = False
-            
+
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
-                    running = False
+                    if self.playing:
+                        self.playing = False
+                    self.running = False
+
+                if event.key == pg.K_UP:
+                    self.player.jump()
+
+            if event.type == pg.KEYUP:
+                if event.key == pg.K_UP:
+                    self.player.jump_cut()
 
     def draw(self):
         # game loop - draw
