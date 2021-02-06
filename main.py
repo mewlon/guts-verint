@@ -34,7 +34,17 @@ class Game:
         # scale background to size of display
         self.bkgd = pg.transform.scale(self.bkgd, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
         #position background in correct place
-        self.x = 0
+        self.x_bkgd = 0
+
+        # load the splash screen
+        self.splash_bkgd = pg.image.load("Images/splash-screen.png").convert()
+        self.splash_bkgd = pg.transform.scale(self.splash_bkgd, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+        self.x_splash_bkgd = 0
+
+        # load the end screen
+        self.end_bkgd = pg.image.load("Images/end-screen.png").convert()
+        self.end_bkgd = pg.transform.scale(self.end_bkgd, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+        self.x_end_bkgd = 0
 
         self.running = True
 
@@ -115,23 +125,29 @@ class Game:
     def draw(self):
         # game loop - draw
 
-        rel_x = self.x % self.bkgd.get_rect().width
+        rel_x = self.x_bkgd % self.bkgd.get_rect().width
         #display the background into the game
-        self.screen.blit(self.bkgd, (rel_x - self.x % self.bkgd.get_rect().width, 0))
+        self.screen.blit(self.bkgd, (rel_x - self.x_bkgd % self.bkgd.get_rect().width, 0))
         if rel_x < self.SCREEN_WIDTH:
             self.screen.blit(self.bkgd, (rel_x, 0))
         #move the background towards the left so that the player moves right
         pg.draw.line(self.screen, (255, 0, 0), (rel_x, 0), (rel_x, self.SCREEN_HEIGHT), 3)
-        self.x -= 1
+        self.x_bkgd -= 1
         self.all_sprites.draw(self.screen)
         pg.display.update()
 
     def show_start_screen(self):
-        pass
+        #game start/splash screen
+        self.screen.blit(self.splash_bkgd, (self.x_splash_bkgd, 0))
+        self.draw_text("Welcome to Save the Ball!", 48, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 4)
+        self.draw_text("Player 1 - use left, right and up arrows to move the ball", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2)
+        self.draw_text("Player 2 - use your mouse to draw platforms and guide the ball to victory!", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT * 3 / 4)
+        pg.display.flip()
+        self.wait_for_key()
 
     def show_go_screen(self):
         # game over/continue
-        self.screen.fill((0,255,255))
+        self.screen.blit(self.end_bkgd, (self.x_end_bkgd, 0))
         self.draw_text("GAME OVER", 48, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 4)
         self.draw_text("Score: ", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2)
         self.draw_text("Press a key to play again", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT * 3 / 4)
