@@ -3,6 +3,7 @@ import os
 import random
 from sprites import *
 
+
 class Game:
     def __init__(self):
         # Initialize pygame
@@ -10,7 +11,7 @@ class Game:
         pg.mixer.init()
 
         # Set up the drawing window
-        self.screen = pg.display.set_mode((1280, 720))
+        self.screen = pg.display.set_mode((800, 600))
         #screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
         # Define constants for the screen width and height
@@ -18,7 +19,7 @@ class Game:
         self.SCREEN_HEIGHT = pg.display.Info().current_h
 
         #set the font
-        self.font_name = pg.font.match_font('arial')
+        self.font_name = pg.font.match_font('georgia')
 
         #Title and Icon
         pg.display.set_caption("Save A Ball")
@@ -27,45 +28,30 @@ class Game:
 
         # Setup the clock
         self.clock = pg.time.Clock()
-        self.FPS = 90
+        self.FPS = 60
 
-        # load the background
-        self.bkgd = pg.image.load("Images/parallax-mountain-bg.png").convert()
-        # scale background to size of display
-        self.bkgd = pg.transform.scale(self.bkgd, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
-        #position background in correct place
-        self.x_bkgd = 0
-
-        # load the splash screen
-        self.splash_bkgd = pg.image.load("Images/splash-screen.png").convert()
-        self.splash_bkgd = pg.transform.scale(self.splash_bkgd, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
-        self.x_splash_bkgd = 0
-
-        # load the end screen
-        self.end_bkgd = pg.image.load("Images/end-screen.png").convert()
-        self.end_bkgd = pg.transform.scale(self.end_bkgd, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
-        self.x_end_bkgd = 0
+        self.ENEMY_SPAWN_DELAY = 2000
 
         self.running = True
 
     def new(self):
         # start a new game
 
-        self.all_sprites = pg.sprite.Group()
+        self.all_sprites = pg.sprite.LayeredUpdates()
         self.platforms = pg.sprite.Group()
+        self.enemies = pg.sprite.Group()
 
-        # Create and Add player to all_sprites group
+        self.enemy_timer = self.ENEMY_SPAWN_DELAY
+
         self.player = Player(self)
-        self.all_sprites.add(self.player)
 
         # create a list of platform
         self.platform_list = [(0, self.SCREEN_HEIGHT - 40, self.SCREEN_WIDTH/2, 40),
-                              (self.SCREEN_WIDTH/2 - 50, self.SCREEN_HEIGHT*3/4, 100, 20)]
+                              (self.SCREEN_WIDTH/2 - 50, self.SCREEN_HEIGHT*3/4, 100, 20),
+                              (self.SCREEN_WIDTH/2 - 50, self.SCREEN_HEIGHT*3/5, 100, 20)]
 
         for plat in self.platform_list:
-            p = Platform(*plat)
-            self.all_sprites.add(p)
-            self.platforms.add(p)
+            p = Platform(self, *plat)
 
         self.run()
 
@@ -82,21 +68,38 @@ class Game:
         # game loop - update
         self.all_sprites.update()
 
+        #spawn enemy
+        now = pg.time.get_ticks()
+        if now - self.enemy_timer > 4000 + random.choice([-1500,-1000,-500,0,500,1000,1500]):
+            self.enemy_timer = now
+            self.createEnemies()
+            
+
         # check if the ball, while falling, hits the platform
         if self.player.vel.y > 0:
             hits = pg.sprite.spritecollide(self.player, self.platforms, False)
             if hits:
+
+                #find the lowest platform hit
                 lowest = hits[0]
                 for hit in hits:
                     if hit.rect.bottom > lowest.rect.bottom:
                         lowest = hit
-                if self.player.pos.y < lowest.rect.bottom:
-                    self.player.pos.y = lowest.rect.top
-                    self.player.vel.y = 0
-                    self.player.jumping = False
+                
+                #if the ball is in the widht of the platform and reached the top of the platform, then stop it
+                if self.player.pos.x < lowest.rect.right+8 and self.player.pos.x > lowest.rect.left-8:
+                    if self.player.pos.y < lowest.rect.bottom:
+                        self.player.pos.y = lowest.rect.top
+                        self.player.vel.y = 0
+                        self.player.jumping = False
 
-        # check losign condition
+        # check losing condition : Falling down
         if self.player.rect.bottom > self.SCREEN_HEIGHT:
+            self.playing = False
+
+        # check losing condition : Being hit by an enemy
+        enemy_hits = pg.sprite.spritecollide(self.player, self.enemies, False)
+        if enemy_hits:
             self.playing = False
 
     def events(self):
@@ -125,37 +128,25 @@ class Game:
     def draw(self):
         # game loop - draw
 
-        # game scrolling background
-        self.screen.fill((0, 0, 0))
-        self.screen.blit(self.bkgd, (self.x_bkgd, 0))
-        self.screen.blit(self.bkgd, (self.SCREEN_WIDTH + self.x_bkgd, 0))
-
-        if self.x_bkgd == -self.SCREEN_WIDTH:
-            self.screen.blit(self.bkgd, (self.SCREEN_WIDTH + self.x_bkgd, 0))
-            self.x_bkgd = 0
-        self.x_bkgd -= 1
+        # Fill the background with a color
+        self.screen.fill((225, 187, 83))
 
         self.all_sprites.draw(self.screen)
+
         pg.display.update()
 
     def show_start_screen(self):
-        #game start/splash screen
-        self.screen.blit(self.splash_bkgd, (self.x_splash_bkgd, 0))
-        self.draw_text("Welcome to Save the Ball!", 48, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 4)
-        self.draw_text("Player 1 - use left, right and up arrows to move the ball", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2)
-        self.draw_text("Player 2 - use your mouse to draw platforms and guide the ball to victory!", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT * 3 / 4)
-        pg.display.flip()
-        self.wait_for_key()
+        pass
 
     def show_go_screen(self):
         # game over/continue
-        self.screen.blit(self.end_bkgd, (self.x_end_bkgd, 0))
+        self.screen.fill((0,255,255))
         self.draw_text("GAME OVER", 48, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 4)
         self.draw_text("Score: ", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2)
         self.draw_text("Press a key to play again", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT * 3 / 4)
         pg.display.flip()
         self.wait_for_key()
-
+    
     def draw_text(self, text, size, color, x, y):
         font = pg.font.Font(self.font_name, size)
         text_surface = font.render(text, True, color)
@@ -174,6 +165,26 @@ class Game:
                 if event.type == pg.KEYUP:
                     waiting = False
 
+    def createEnemies(self, n_enemies = random.randint(2,5), MinSpeedX = 7, MaxSpeedX = 9):
+
+        space = 32*n_enemies
+
+        x_coord = None
+        y_coord = random.randint(0,self.SCREEN_HEIGHT-space)
+        
+        info = {}
+        info['direction'] = random.choice(['right','left'])
+        
+        if info['direction'] == 'right':
+            x_coord = self.SCREEN_WIDTH
+            info['speed'] = random.randint(MinSpeedX, MaxSpeedX)
+        if info['direction'] == 'left':
+            x_coord = 0
+            info['speed'] = -random.randint(MinSpeedX,MaxSpeedX)
+    
+        for i in range(n_enemies):
+            info['coordinates'] = (x_coord, y_coord + 32*i)
+            Enemy(self,info)
 
 g = Game()
 g.show_start_screen()
