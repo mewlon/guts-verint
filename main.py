@@ -3,7 +3,6 @@ import os
 import random
 from sprites import *
 
-
 class Game:
     def __init__(self):
         # Initialize pygame
@@ -29,6 +28,13 @@ class Game:
         # Setup the clock
         self.clock = pg.time.Clock()
         self.FPS = 60
+
+        # load the background
+        self.bkgd = pg.image.load("Images/parallax-mountain-bg.png").convert()
+        # scale background to size of display
+        self.bkgd = pg.transform.scale(self.bkgd, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+        #position background in correct place
+        self.x = 0
 
         self.running = True
 
@@ -109,9 +115,14 @@ class Game:
     def draw(self):
         # game loop - draw
 
-        # Fill the background with a color
-        self.screen.fill((225, 187, 83))
-
+        rel_x = self.x % self.bkgd.get_rect().width
+        #display the background into the game
+        self.screen.blit(self.bkgd, (rel_x - self.x % self.bkgd.get_rect().width, 0))
+        if rel_x < self.SCREEN_WIDTH:
+            self.screen.blit(self.bkgd, (rel_x, 0))
+        #move the background towards the left so that the player moves right
+        pg.draw.line(self.screen, (255, 0, 0), (rel_x, 0), (rel_x, self.SCREEN_HEIGHT), 3)
+        self.x -= 1
         self.all_sprites.draw(self.screen)
         pg.display.update()
 
@@ -126,7 +137,7 @@ class Game:
         self.draw_text("Press a key to play again", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT * 3 / 4)
         pg.display.flip()
         self.wait_for_key()
-    
+
     def draw_text(self, text, size, color, x, y):
         font = pg.font.Font(self.font_name, size)
         text_surface = font.render(text, True, color)
