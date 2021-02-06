@@ -16,6 +16,9 @@ from pygame.locals import (
     QUIT,
 )
 
+drawing = False      # currently drawing?
+lastPosB = None      # last mouse position for playerB
+linearr = []         # array of line object containing with their coords
 jump = False
 jumpCount = 10
 
@@ -120,6 +123,14 @@ while running:
             if event.key == K_LEFT or event.key == K_RIGHT:
                 print("Keystroke has been released")
                 ballX_change = 0
+
+        if event.type == pygame.MOUSEMOTION:
+            if (drawing):
+                mouse_position = pygame.mouse.get_pos()
+                if lastPosB is not None:
+                    pygame.draw.line(screen, (0, 0, 0), lastPosB, mouse_position, 1)
+                lastPosB = mouse_position
+                linearr.append()
 
     # Get the set of keys pressed and check for user input
     pressed_keys = pygame.key.get_pressed()

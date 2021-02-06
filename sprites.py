@@ -90,5 +90,23 @@ class Platform(pg.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-        
+class drawnPlatforms(pg.sprite.Sprite):
+    def __init__(self, state, game):
+        pg.sprite.Sprite.__init__(self)
+        self.game = game
+        self.lastPos = None
+        self.drawmode(state)
 
+
+    def drawmode(self, state):
+        while state:
+            mouse_position = pg.mouse.get_pos()
+            if self.lastPos is not None:
+                pg.draw.line(self.game.screen, (0, 0, 0), mouse_position, mouse_position, 1)
+            self.lastPos = mouse_position
+            pg.draw.line(self.game.screen, (0, 0, 0), mouse_position, mouse_position, 1)
+
+            for event in pg.event.get():
+                if event.type == pg.MOUSEBUTTONUP:
+                    state = False
+        self.lastPos = None

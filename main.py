@@ -106,6 +106,13 @@ class Game:
                 if event.key == pg.K_UP:
                     self.player.jump_cut()
 
+            if event.type == pg.MOUSEBUTTONDOWN:
+                drawnPlatforms(True, self)
+            if event.type == pg.MOUSEBUTTONUP:
+                print("hello")
+                drawnPlatforms(False, self)
+
+
     def draw(self):
         # game loop - draw
 
