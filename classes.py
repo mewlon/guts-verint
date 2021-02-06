@@ -5,6 +5,7 @@ import os
 # Updated to conform to flake8 and black standards
 from pygame.locals import (
     RLEACCEL,
+    K_SPACE,
     K_UP,
     K_DOWN,
     K_LEFT,
@@ -15,6 +16,9 @@ from pygame.locals import (
     QUIT,
 )
 
+jump = False
+jumpCount = 10
+
 #Path to images folder
 def path_images(filename):
     return os.path.join("Images", filename)
@@ -22,30 +26,42 @@ def path_images(filename):
 # Define a Player object by extending pygame.sprite.Sprite
 # The surface drawn on the screen is now an attribute of 'player'
 class Player(pygame.sprite.Sprite):
+
     def __init__(self):
         super(Player, self).__init__()
         self.surf = pygame.image.load(path_images("ball64.png")).convert()
         #.set_colorkey() indicates the color pygame will render as transparent
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect()
+        self.jump = False
+        self.jumpCount = 10
 
     # Move the sprite based on user keypresses
     def update(self, pressed_keys):
-        if pressed_keys[K_UP]:
-            #Delay the falling down as loops are very fast
-            for i in range(20):
-                if i <= 10:
-                    self.rect.y -= 0.5
-                elif i > 10:
-                    self.rect.y += 0.5
-            #self.rect.move_ip(0, -5)
-        if pressed_keys[K_DOWN]:
-            self.rect.move_ip(0, 5)
-            #None
         if pressed_keys[K_LEFT]:
             self.rect.move_ip(-10, 0)
         if pressed_keys[K_RIGHT]:
             self.rect.move_ip(10, 0)
+        
+        if self.jump:
+            if self.jumpCount >= -10:
+                neg = 1
+                if self.jumpCount < 0:
+                    neg = -1
+                moveUp = (self.jumpCount**2) * 0.5 * neg
+                self.jumpCount -= 1
+
+                self.rect.move_ip(0, -moveUp)
+            else:
+                self.jump = False
+                self.jumpCount = 10
+        else:
+            if pressed_keys[K_UP]:
+                self.jump = True
+                #self.rect.move_ip(0, -5)
+            if pressed_keys[K_DOWN]:
+                #None
+                self.rect.move_ip(0, 5)
 
         # Keep player on the screen
         if self.rect.left < 0:
