@@ -33,7 +33,7 @@ class Game:
 
         self.all_sprites = pg.sprite.Group()
         #Create and Add player to all_sprites group
-        self.player = Player(self.SCREEN_WIDTH, self.SCREEN_HEIGHT)
+        self.player = Player(self)
         self.all_sprites.add(self.player)
         self.run()
 

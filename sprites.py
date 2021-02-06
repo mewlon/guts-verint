@@ -1,14 +1,16 @@
 import pygame as pg
 import os
 
+v = pg.math.Vector2
 
 
 class Player(pg.sprite.Sprite):
 
-    def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT):
+    def __init__(self, game):
         super(Player, self).__init__()
-        self.SCREEN_WIDTH = SCREEN_WIDTH
-        self.SCREEN_HEIGHT = SCREEN_HEIGHT
+        self.game = game
+        self.SCREEN_WIDTH = game.SCREEN_WIDTH
+        self.SCREEN_HEIGHT = game.SCREEN_HEIGHT
 
         self.image = pg.image.load(os.path.join("Images", "ball64.png")).convert()
         #.set_colorkey() indicates the color pg will render as transparent
@@ -17,46 +19,60 @@ class Player(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (self.SCREEN_WIDTH/2, self.SCREEN_HEIGHT/2)
 
+        #position of the ball
+        self.pos = v(self.SCREEN_WIDTH/2, self.SCREEN_HEIGHT/2)
+        #velocity of the ball
+        self.vel = v(0,0)
+        #acceleration of the ball
+        self.acc = v(0,0)
+
+        #Acceleration, Friction constants
+        self.BALL_ACC = 0.5
+        self.BALL_FRICTION = -0.12
+        self.BALL_GRAVITY = 0.8
+
         self.jump = False
         self.jumpCount = 10
 
     # Move the sprite based on user keypresses
     def update(self):
+        
+        #acceleration is downward unless certain keys are pressed
+        self.acc = v(0, self.BALL_GRAVITY)
+
         pressed_keys = pg.key.get_pressed()
 
         if pressed_keys[pg.K_LEFT]:
-            self.rect.x += -10
+            self.acc.x = -self.BALL_ACC
         if pressed_keys[pg.K_RIGHT]:
-            self.rect.x += 10
-        
-        if self.jump:
-            if self.jumpCount >= -10:
-                neg = -1
-                if self.jumpCount < 0:
-                    neg = 1
-                moveUp = (self.jumpCount**2) * 0.5 * neg
-                self.jumpCount -= 1
+            self.acc.x = self.BALL_ACC
+        if pressed_keys[pg.K_UP]:
+            self.vel.y = -20
 
-                self.rect.move_ip(0, moveUp)
-            else:
-                self.jump = False
-                self.jumpCount = 10
-        else:
-            if pressed_keys[pg.K_UP]:
-                self.jump = True
-                #self.rect.move_ip(0, -5)
-            if pressed_keys[pg.K_DOWN]:
-                #None
-                self.rect.y += 5
+        #apply friction
+        self.acc.x += self.vel.x * self.BALL_FRICTION
+        self.vel += self.acc
+        #Equation of motion
+        self.pos += self.vel + (self.acc*0.5)
 
         # Keep player on the screen
-        if self.rect.left < 0:
-            self.rect.left = 0
-        if self.rect.right > self.SCREEN_WIDTH:
-            self.rect.right = self.SCREEN_WIDTH
-        if self.rect.top <= 0:
-            self.rect.top = 0
-        if self.rect.bottom >= self.SCREEN_HEIGHT:
-            self.rect.bottom = self.SCREEN_HEIGHT
+        if self.pos.x < 32:
+            self.pos.x = 32
+        if self.pos.x > self.SCREEN_WIDTH-32:
+            self.pos.x = self.SCREEN_WIDTH-32
+        if self.pos.y <= 32:
+            self.pos.y = 32
+        if self.pos.y >= self.SCREEN_HEIGHT-32:
+            self.pos.y = self.SCREEN_HEIGHT-32
+
+        #Update the position of the ball
+        self.rect.center = self.pos
+
+    def jump(self):
+        #self.rect.x += 1
+        #hits = pg.sprite.spritecollide(self, self.game.platforms, False)
+        #self.rect.x -= 1
+        #if hits:
+        self.vel.y = -20
 
 
