@@ -62,8 +62,6 @@ class Player(pg.sprite.Sprite):
             self.pos.x = self.SCREEN_WIDTH-32
         if self.pos.y <= 32:
             self.pos.y = 32
-        if self.pos.y >= self.SCREEN_HEIGHT-32:
-            self.pos.y = self.SCREEN_HEIGHT-32
 
         #Update the position of the ball
         self.rect.midbottom = self.pos
@@ -92,6 +90,5 @@ class Platform(pg.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-
-
+        
 
