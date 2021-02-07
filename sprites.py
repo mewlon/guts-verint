@@ -101,6 +101,8 @@ class Clouds(pg.sprite.Sprite):
         self.groups = game.all_sprites, game.platforms
         pg.sprite.Sprite.__init__(self, self.groups)
 
+        self.game = game
+
         width = int(abs(pos_1[0] - pos_2[0]))
         height = int(abs(pos_1[1] - pos_2[1]))
 
@@ -127,7 +129,10 @@ class Clouds(pg.sprite.Sprite):
         self.creation_time = pg.time.get_ticks()
     
     def update(self):
-        self.rect.x -= PLATFORM_SPEED
+        now = pg.time.get_ticks()
+        
+        if now-(self.game.start_game_timer+SPAWN_DELAY)>0:
+            self.rect.x -= PLATFORM_SPEED
 
         if self.rect.right < 0:
             self.kill()

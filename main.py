@@ -13,7 +13,7 @@ class Game:
 
         # Set up the drawing window
         self.screen = pg.display.set_mode((800, 600))
-        #screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
+        #self.screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
         # Define constants for the screen width and height
         self.SCREEN_WIDTH = pg.display.Info().current_w
@@ -77,8 +77,8 @@ class Game:
         self.platforms = pg.sprite.Group()
         self.enemies = pg.sprite.Group()
 
-        self.enemy_bullet_timer = ENEMY_SPAWN_DELAY
-        self.enemy_lander_timer = ENEMY_SPAWN_DELAY
+        self.enemy_bullet_timer = SPAWN_DELAY
+        self.enemy_lander_timer = SPAWN_DELAY
 
         self.MIN_LANDERS = MIN_LANDERS
         self.MAX_LANDERS = MAX_LANDERS
@@ -297,36 +297,37 @@ class Game:
     def create_Enemies_Bullet(self):
         now = pg.time.get_ticks()
 
-        if now - self.enemy_bullet_timer > BULLET_SPAWN_TIME + random.choice([-1500,-1000,-500,0,500,1000,1500]):
+        if now-(self.start_game_timer+SPAWN_DELAY)>BULLET_SPAWN_DELAY:
+            if now - self.enemy_bullet_timer > BULLET_SPAWN_TIME + random.choice([-1500,-1000,-500,0,500,1000,1500]):
 
-            self.enemy_bullet_timer = now
-            n_enemies = random.randint(MIN_ENEMIES,MAX_ENEMIES)
-            space = 32*n_enemies
+                self.enemy_bullet_timer = now
+                n_enemies = random.randint(MIN_ENEMIES,MAX_ENEMIES)
+                space = 32*n_enemies
 
-            x_coord = None
-            y_coord = random.randint(ENEMY_SIZE,self.SCREEN_HEIGHT-space)
+                x_coord = None
+                y_coord = random.randint(ENEMY_SIZE,self.SCREEN_HEIGHT-space)
+                
+                speed = random.randint(MIN_SPEED_X, MAX_SPEED_X)
+
+                info = {}
+                info['image'] = "bullet.png"
+                info['direction'] = random.choice(['right','left'])
+                
+                if info['direction'] == 'right':
+                    x_coord = self.SCREEN_WIDTH
+                    info['speed'] = speed
+                if info['direction'] == 'left':
+                    x_coord = 0
+                    info['speed'] = -speed
             
-            speed = random.randint(MIN_SPEED_X, MAX_SPEED_X)
-
-            info = {}
-            info['image'] = "bullet.png"
-            info['direction'] = random.choice(['right','left'])
-            
-            if info['direction'] == 'right':
-                x_coord = self.SCREEN_WIDTH
-                info['speed'] = speed
-            if info['direction'] == 'left':
-                x_coord = 0
-                info['speed'] = -speed
-        
-            for i in range(n_enemies):
-                info['coordinates'] = (x_coord, y_coord + 32*i)
-                Enemy(self,info)
+                for i in range(n_enemies):
+                    info['coordinates'] = (x_coord, y_coord + 32*i)
+                    Enemy(self,info)
 
     def create_Enemies_Landers(self):
         now = pg.time.get_ticks()
         
-        if now-self.start_game_timer>LANDER_SPAWN_DELAY:
+        if now-(self.start_game_timer+SPAWN_DELAY)>LANDER_SPAWN_DELAY:
             if now - self.enemy_lander_timer > LANDER_SPAWN_TIME + random.choice([-1500,-1000,-500,0,500,1000,1500]):
 
                 self.enemy_lander_timer = now
