@@ -1,6 +1,7 @@
 import pygame as pg
 import os
 import random
+from settings import *
 from sprites import *
 
 
@@ -22,15 +23,27 @@ class Game:
         self.font_name = pg.font.match_font('georgia')
 
         #Title and Icon
-        pg.display.set_caption("Save A Ball")
-        icon = pg.image.load(os.path.join("Images", "ball-icon.png"))
+        pg.display.set_caption(TITLE)
+        icon = pg.image.load(os.path.join(IMAGE_DIR, "ball-icon.png"))
         pg.display.set_icon(icon)
 
         # Setup the clock
         self.clock = pg.time.Clock()
-        self.FPS = 60
 
-        self.ENEMY_SPAWN_DELAY = 2000
+        #position background in correct place
+        self.x_bkgd = 0
+
+        # load the splash screen
+        self.splash_bkgd = pg.image.load(os.path.join(IMAGE_DIR, "splash-screen.png")).convert()
+        self.splash_bkgd = pg.transform.scale(self.splash_bkgd, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+        self.x_splash_bkgd = 0
+
+        # load the end screen
+        self.end_bkgd = pg.image.load(os.path.join(IMAGE_DIR, "end-screen.png")).convert()
+        self.end_bkgd = pg.transform.scale(self.end_bkgd, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+        self.x_end_bkgd = 0
+        
+        self.pos_1 = (0,0)
 
         self.running = True
 
@@ -41,17 +54,16 @@ class Game:
         self.platforms = pg.sprite.Group()
         self.enemies = pg.sprite.Group()
 
-        self.enemy_timer = self.ENEMY_SPAWN_DELAY
+        self.enemy_timer = ENEMY_SPAWN_DELAY
 
         self.player = Player(self)
 
         # create a list of platform
-        self.platform_list = [(0, self.SCREEN_HEIGHT - 40, self.SCREEN_WIDTH/2, 40),
-                              (self.SCREEN_WIDTH/2 - 50, self.SCREEN_HEIGHT*3/4, 100, 20),
-                              (self.SCREEN_WIDTH/2 - 50, self.SCREEN_HEIGHT*3/5, 100, 20)]
+        self.platform_list = [((self.SCREEN_WIDTH/2 - 50, self.SCREEN_HEIGHT*3/4-10), (self.SCREEN_WIDTH/2 + 50, self.SCREEN_HEIGHT*3/4+10)),
+                              ((0, self.SCREEN_HEIGHT-20), (self.SCREEN_WIDTH/2, self.SCREEN_HEIGHT+20))]
 
         for plat in self.platform_list:
-            p = Platform(self, *plat)
+            Clouds(self, *plat)
 
         self.run()
 
@@ -59,7 +71,7 @@ class Game:
         # game loop
         self.playing = True
         while self.playing:
-            self.clock.tick(self.FPS)
+            self.clock.tick(FPS)
             self.events()
             self.update()
             self.draw()
@@ -74,7 +86,6 @@ class Game:
             self.enemy_timer = now
             self.createEnemies()
             
-
         # check if the ball, while falling, hits the platform
         if self.player.vel.y > 0:
             hits = pg.sprite.spritecollide(self.player, self.platforms, False)
@@ -106,41 +117,77 @@ class Game:
         # game loop - events
 
         for event in pg.event.get():
-            # check for cosing window
+            # check for closing the window with the close button
             if event.type == pg.QUIT:
                 if self.playing:
                     self.playing = False
                 self.running = False
 
             if event.type == pg.KEYDOWN:
+                # check for closing the window with Esc
                 if event.key == pg.K_ESCAPE:
                     if self.playing:
                         self.playing = False
                     self.running = False
 
+                # check for jumping
                 if event.key == pg.K_UP:
                     self.player.jump()
 
             if event.type == pg.KEYUP:
+                # check for jumping short
                 if event.key == pg.K_UP:
                     self.player.jump_cut()
+
+            if event.type == pg.MOUSEBUTTONDOWN:
+                self.pos_1 = pg.mouse.get_pos()
+
+            if event.type == pg.MOUSEBUTTONUP:
+                pos_2 = pg.mouse.get_pos()
+
+                Clouds(self, self.pos_1, pos_2)
+
+                if len(self.platforms)>3:
+
+                    lower = pg.time.get_ticks()
+                    toKill = None
+                    for cloud in self.platforms:
+                        if cloud.creation_time < lower:
+                            toKill = cloud
+                            lower = cloud.creation_time
+                    
+                    toKill.kill()
+                
 
     def draw(self):
         # game loop - draw
 
-        # Fill the background with a color
-        self.screen.fill((225, 187, 83))
+        # game scrolling background
+        self.screen.fill((0, 0, 0))
+        self.screen.blit(self.splash_bkgd, (self.x_bkgd, 0))
+        self.screen.blit(self.splash_bkgd, (self.SCREEN_WIDTH + self.x_bkgd, 0))
+
+        if self.x_bkgd == -self.SCREEN_WIDTH:
+            self.screen.blit(self.splash_bkgd, (self.SCREEN_WIDTH + self.x_bkgd, 0))
+            self.x_bkgd = 0
+        self.x_bkgd -= 1
 
         self.all_sprites.draw(self.screen)
 
         pg.display.update()
 
     def show_start_screen(self):
-        pass
+        #game start/splash screen
+        self.screen.blit(self.splash_bkgd, (self.x_splash_bkgd, 0))
+        self.draw_text("Welcome to "+TITLE, 48, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 4)
+        self.draw_text("Player 1 - use LEFT, RIGHT and UP arrows to MOVE the ball", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2)
+        self.draw_text("Player 2 - DRAG your MOUSE to DRAW platforms and guide the ball to victory!", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT * 3 / 4)
+        pg.display.flip()
+        self.wait_for_key()
 
     def show_go_screen(self):
         # game over/continue
-        self.screen.fill((0,255,255))
+        self.screen.blit(self.end_bkgd, (self.x_end_bkgd, 0))
         self.draw_text("GAME OVER", 48, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 4)
         self.draw_text("Score: ", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2)
         self.draw_text("Press a key to play again", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT * 3 / 4)
@@ -157,7 +204,7 @@ class Game:
     def wait_for_key(self):
         waiting = True
         while waiting:
-            self.clock.tick(self.FPS)
+            self.clock.tick(FPS)
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     waiting = False
@@ -165,22 +212,25 @@ class Game:
                 if event.type == pg.KEYUP:
                     waiting = False
 
-    def createEnemies(self, n_enemies = random.randint(2,5), MinSpeedX = 7, MaxSpeedX = 9):
+    def createEnemies(self):
 
+        n_enemies = random.randint(MIN_ENEMIES,MAX_ENEMIES)
         space = 32*n_enemies
 
         x_coord = None
         y_coord = random.randint(0,self.SCREEN_HEIGHT-space)
         
+        speed = random.randint(MIN_SPEED_X, MAX_SPEED_X)
+
         info = {}
         info['direction'] = random.choice(['right','left'])
         
         if info['direction'] == 'right':
             x_coord = self.SCREEN_WIDTH
-            info['speed'] = random.randint(MinSpeedX, MaxSpeedX)
+            info['speed'] = speed
         if info['direction'] == 'left':
             x_coord = 0
-            info['speed'] = -random.randint(MinSpeedX,MaxSpeedX)
+            info['speed'] = -speed
     
         for i in range(n_enemies):
             info['coordinates'] = (x_coord, y_coord + 32*i)
