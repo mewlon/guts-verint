@@ -77,7 +77,8 @@ class Game:
         self.platforms = pg.sprite.Group()
         self.enemies = pg.sprite.Group()
 
-        self.enemy_timer = ENEMY_SPAWN_DELAY
+        self.enemy_bullet_timer = ENEMY_SPAWN_DELAY
+        self.enemy_lander_timer = ENEMY_SPAWN_DELAY
 
         self.player = Player(self)
 
@@ -99,6 +100,8 @@ class Game:
         self.playing = True
 
         pg.mixer.music.play(loops=-1)
+        
+        self.start_game_timer = pg.time.get_ticks()
 
         while self.playing:
             self.clock.tick(FPS)
@@ -112,11 +115,11 @@ class Game:
         # game loop - update
         self.all_sprites.update()
 
-        #spawn enemy
-        now = pg.time.get_ticks()
-        if now - self.enemy_timer > 4000 + random.choice([-1500,-1000,-500,0,500,1000,1500]):
-            self.enemy_timer = now
-            self.createEnemies()
+        #spawn bullet
+        self.create_Enemies_Bullet()
+
+        #spawn bullet
+        self.create_Enemies_Landers()
             
         # check if the ball, while falling, hits the platform
         if self.player.vel.y > 0:
@@ -203,7 +206,7 @@ class Game:
                             if cloud.creation_time < lower:
                                 toKill = cloud
                                 lower = cloud.creation_time
-                        
+                                
                         toKill.kill()
                 
 
@@ -286,29 +289,53 @@ class Game:
                 if event.type == pg.KEYUP:
                     waiting = False
 
-    def createEnemies(self):
+    def create_Enemies_Bullet(self):
+        now = pg.time.get_ticks()
 
-        n_enemies = random.randint(MIN_ENEMIES,MAX_ENEMIES)
-        space = 32*n_enemies
+        if now - self.enemy_bullet_timer > BULLET_SPAWN_TIME + random.choice([-1500,-1000,-500,0,500,1000,1500]):
 
-        x_coord = None
-        y_coord = random.randint(0,self.SCREEN_HEIGHT-space)
+            self.enemy_bullet_timer = now
+            n_enemies = random.randint(MIN_ENEMIES,MAX_ENEMIES)
+            space = 32*n_enemies
+
+            x_coord = None
+            y_coord = random.randint(0,self.SCREEN_HEIGHT-space)
+            
+            speed = random.randint(MIN_SPEED_X, MAX_SPEED_X)
+
+            info = {}
+            info['image'] = "bullet.png"
+            info['direction'] = random.choice(['right','left'])
+            
+            if info['direction'] == 'right':
+                x_coord = self.SCREEN_WIDTH
+                info['speed'] = speed
+            if info['direction'] == 'left':
+                x_coord = 0
+                info['speed'] = -speed
         
-        speed = random.randint(MIN_SPEED_X, MAX_SPEED_X)
+            for i in range(n_enemies):
+                info['coordinates'] = (x_coord, y_coord + 32*i)
+                Enemy(self,info)
 
-        info = {}
-        info['direction'] = random.choice(['right','left'])
+    def create_Enemies_Landers(self):
+        now = pg.time.get_ticks()
         
-        if info['direction'] == 'right':
-            x_coord = self.SCREEN_WIDTH
-            info['speed'] = speed
-        if info['direction'] == 'left':
-            x_coord = 0
-            info['speed'] = -speed
-    
-        for i in range(n_enemies):
-            info['coordinates'] = (x_coord, y_coord + 32*i)
-            Enemy(self,info)
+        if now-self.start_game_timer>15000:
+            if now - self.enemy_lander_timer > LANDER_SPAWN_TIME + random.choice([-1500,-1000,-500,0,500,1000,1500]):
+
+                self.enemy_lander_timer = now
+                n_enemies = random.randint(MIN_LANDERS,MAX_LANDERS)
+                #space = ENEMY_SIZE*n_enemies
+
+                info = {}
+                info['image'] = "lander.png"
+                info['direction'] = 'bottom'
+
+                for i in range(n_enemies):
+                    info['coordinates'] = (random.randint(0,self.SCREEN_WIDTH-ENEMY_SIZE), 0)
+                    info['speed'] = random.randint(MIN_SPEED_X+2, MAX_SPEED_X+2)
+                    Enemy(self,info)
 
 g = Game()
 g.show_start_screen()

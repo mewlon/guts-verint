@@ -135,11 +135,12 @@ class Clouds(pg.sprite.Sprite):
 
 class Enemy(pg.sprite.Sprite):
     def __init__(self, game, info):
+        self.info = info
         self._layer = 3
         self.groups = game.all_sprites, game.enemies
         pg.sprite.Sprite.__init__(self, self.groups)
 
-        self.image = pg.image.load(os.path.join(IMAGE_DIR, "bullet.png")).convert()
+        self.image = pg.image.load(os.path.join(IMAGE_DIR, info['image'])).convert()
         # .set_colorkey() indicates the color pg will render as transparent
         self.image.set_colorkey((255, 255, 255), pg.RLEACCEL)
 
@@ -150,7 +151,10 @@ class Enemy(pg.sprite.Sprite):
         self.vel = info['speed']
 
     def update(self):
-        self.rect.x -= self.vel
+        if(self.info['direction'] == "bottom"):
+            self.rect.y += self.vel
+        else:
+            self.rect.x -= self.vel
         # Remove the sprite when it passes the left edge of the screen
         if self.rect.right < 0:
             self.kill()
