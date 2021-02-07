@@ -54,10 +54,16 @@ class Game:
         
     def load_data(self):
         self.dir = os.path.dirname(__file__)
-        with open(os.path.join(self.dir, SCORES_FILE), 'w') as f:
+        print(os.path.join(self.dir, SCORES_FILE))
+        print(SCORES_FILE)
+        with open(SCORES_FILE, 'r') as f:
             try:
-                self.highscore = int(f.read())
-            except:
+                lines = f.readlines()
+                line = lines[0].strip()
+                self.highscore = int(line.strip())
+
+            except Exception as e:
+                print(e)
                 self.highscore = 0
 
     def new(self):
@@ -228,7 +234,7 @@ class Game:
         if self.score > self.highscore:
             self.highscore = self.score
             self.draw_text("New HIGH SCORE!", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2 + 50)
-            with open(os.path.join(self.dir, SCORES_FILE), 'w') as f:
+            with open(SCORES_FILE, 'w') as f:
                 f.write(str(self.score))
         else:
             self.draw_text("High score: "+str(self.highscore), 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2 + 50)
