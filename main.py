@@ -47,6 +47,16 @@ class Game:
 
         self.running = True
 
+        self.load_data()
+
+    def load_data(self):
+        self.dir = os.path.dirname(__file__)
+        with open(os.path.join(self.dir, SCORES_FILE), 'w') as f:
+            try:
+                self.highscore = int(f.read())
+            except:
+                self.highscore = 0
+
     def new(self):
         # start a new game
 
@@ -64,6 +74,8 @@ class Game:
 
         for plat in self.platform_list:
             Clouds(self, *plat)
+        
+        self.start_score = pg.time.get_ticks()
 
         self.run()
 
@@ -190,14 +202,18 @@ class Game:
 
         self.all_sprites.draw(self.screen)
 
+        self.score =  int((pg.time.get_ticks()-self.start_score)/100)
+        self.draw_text("Score: "+str(self.score), 22, (255,255,255), 50, 10)
+
         pg.display.update()
 
     def show_start_screen(self):
         #game start/splash screen
         self.screen.blit(self.splash_bkgd, (self.x_splash_bkgd, 0))
-        self.draw_text("Welcome to "+TITLE, 48, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 4)
+        self.draw_text(TITLE, 36, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 4)
         self.draw_text("Player 1 - use LEFT, RIGHT and UP arrows to MOVE the ball", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2)
         self.draw_text("Player 2 - DRAG your MOUSE to DRAW platforms and RIGHT click to SHIELD!", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT * 3 / 4)
+        self.draw_text("High score: "+str(self.highscore), 22, (255,255,255), self.SCREEN_WIDTH / 2, 50)
         pg.display.flip()
         self.wait_for_key()
 
@@ -205,7 +221,16 @@ class Game:
         # game over/continue
         self.screen.blit(self.end_bkgd, (self.x_end_bkgd, 0))
         self.draw_text("GAME OVER", 48, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 4)
-        self.draw_text("Score: ", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2)
+        self.draw_text("Score: "+str(self.score), 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2)
+
+        if self.score > self.highscore:
+            self.highscore = self.score
+            self.draw_text("New HIGH SCORE!", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2 + 50)
+            with open(os.path.join(self.dir, SCORES_FILE), 'w') as f:
+                f.write(str(self.score))
+        else:
+            self.draw_text("High score: "+str(self.highscore), 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2 + 50)
+
         self.draw_text("Press a key to play again", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT * 3 / 4)
         pg.display.flip()
         self.wait_for_key()
