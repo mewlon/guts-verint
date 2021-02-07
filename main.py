@@ -42,7 +42,7 @@ class Game:
         self.end_bkgd = pg.image.load(os.path.join(IMAGE_DIR, "end-screen.png")).convert()
         self.end_bkgd = pg.transform.scale(self.end_bkgd, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
         self.x_end_bkgd = 0
-        
+
         self.pos_1 = (0,0)
 
         self.running = True
@@ -50,12 +50,17 @@ class Game:
         self.load_data()
 
     def load_data(self):
+        #load high score
         self.dir = os.path.dirname(__file__)
         with open(os.path.join(self.dir, SCORES_FILE), 'w') as f:
             try:
                 self.highscore = int(f.read())
             except:
                 self.highscore = 0
+
+        # load sounds
+        self.snd_dir = os.path.join(self.dir, "Sounds")
+        self.jump_sound = pg.mixer.Sound(os.path.join(self.snd_dir, 'Jump_20.wav'))
 
     def new(self):
         # start a new game
@@ -74,7 +79,7 @@ class Game:
 
         for plat in self.platform_list:
             Clouds(self, *plat)
-        
+
         self.start_score = pg.time.get_ticks()
 
         self.run()
@@ -97,7 +102,7 @@ class Game:
         if now - self.enemy_timer > 4000 + random.choice([-1500,-1000,-500,0,500,1000,1500]):
             self.enemy_timer = now
             self.createEnemies()
-            
+
         # check if the ball, while falling, hits the platform
         if self.player.vel.y > 0:
             hits = pg.sprite.spritecollide(self.player, self.platforms, False)
@@ -108,7 +113,7 @@ class Game:
                 for hit in hits:
                     if hit.rect.bottom > lowest.rect.bottom:
                         lowest = hit
-                
+
                 #if the ball is in the widht of the platform and reached the top of the platform, then stop it
                 if self.player.pos.x < lowest.rect.right+8 and self.player.pos.x > lowest.rect.left-8:
                     if self.player.pos.y < lowest.rect.bottom:
@@ -121,7 +126,7 @@ class Game:
             self.playing = False
 
         # check losing condition : Being hit by an enemy
-        enemy_hits = pg.sprite.spritecollideany(self.player, self.enemies, False)
+        enemy_hits = pg.sprite.spritecollide(self.player, self.enemies, False)
         if enemy_hits:
             if self.player.shield:
                 enemy_hits.kill()
@@ -155,7 +160,7 @@ class Game:
                 if event.key == pg.K_UP:
                     self.player.jump_cut()
 
-            if event.type == pg.MOUSEBUTTONDOWN: 
+            if event.type == pg.MOUSEBUTTONDOWN:
                 #if the mouse button equals LEFT
                 if event.button == 1:
                     self.pos_1 = pg.mouse.get_pos()
@@ -168,7 +173,7 @@ class Game:
 
 
             #Draw platforms
-            if event.type == pg.MOUSEBUTTONUP: 
+            if event.type == pg.MOUSEBUTTONUP:
                 #if the mouse button equals LEFT
                 if event.button == 1:
                     pos_2 = pg.mouse.get_pos()
@@ -183,9 +188,9 @@ class Game:
                             if cloud.creation_time < lower:
                                 toKill = cloud
                                 lower = cloud.creation_time
-                        
+
                         toKill.kill()
-                
+
 
     def draw(self):
         # game loop - draw
@@ -234,7 +239,7 @@ class Game:
         self.draw_text("Press a key to play again", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT * 3 / 4)
         pg.display.flip()
         self.wait_for_key()
-    
+
     def draw_text(self, text, size, color, x, y):
         font = pg.font.Font(self.font_name, size)
         text_surface = font.render(text, True, color)
@@ -260,19 +265,19 @@ class Game:
 
         x_coord = None
         y_coord = random.randint(0,self.SCREEN_HEIGHT-space)
-        
+
         speed = random.randint(MIN_SPEED_X, MAX_SPEED_X)
 
         info = {}
         info['direction'] = random.choice(['right','left'])
-        
+
         if info['direction'] == 'right':
             x_coord = self.SCREEN_WIDTH
             info['speed'] = speed
         if info['direction'] == 'left':
             x_coord = 0
             info['speed'] = -speed
-    
+
         for i in range(n_enemies):
             info['coordinates'] = (x_coord, y_coord + 32*i)
             Enemy(self,info)
