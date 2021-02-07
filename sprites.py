@@ -86,7 +86,6 @@ class Player(pg.sprite.Sprite):
         self.rect.x -= 1
 
         if hits and not self.jumping:
-            self.game.jump_sound.play()
             self.jumping = True
             self.vel.y = BALL_JUMP
 
@@ -125,7 +124,7 @@ class Clouds(pg.sprite.Sprite):
         self.rect.y = pos_1[1]
 
         self.creation_time = pg.time.get_ticks()
-
+    
     def update(self):
         self.rect.x -= PLATFORM_SPEED
 

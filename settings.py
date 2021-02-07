@@ -1,7 +1,8 @@
 #Game settings
 IMAGE_DIR = "Images"
-TITLE = "Save A Ball!"
+TITLE = "SAVE THE MOON!"
 FPS = 60
+SCORES_FILE = "best_scores.txt"
 
 #Ball properties
 BALL_ACC = 0.5
@@ -29,6 +30,3 @@ PLATFORM_SPEED = 1
 
 CLOUD_WIDTH_MIN = 50
 CLOUD_WIDTH_MAX = 175
-
-#Score
-SCORES_FILE = "scores.txt"
