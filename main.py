@@ -66,6 +66,10 @@ class Game:
                 print(e)
                 self.highscore = 0
 
+        # load sounds
+        self.snd_dir = os.path.join(self.dir, "Sounds")
+        self.jump_sound = pg.mixer.Sound(os.path.join(self.snd_dir, 'Jump_20.wav'))
+
     def new(self):
         # start a new game
 
@@ -84,17 +88,25 @@ class Game:
             Clouds(self, *plat)
         
         self.start_score = pg.time.get_ticks()
+        
+        #add background theme song
+        pg.mixer.music.load(os.path.join(self.snd_dir, "Main_Theme.ogg"))
 
         self.run()
 
     def run(self):
         # game loop
         self.playing = True
+
+        pg.mixer.music.play(loops=-1)
+
         while self.playing:
             self.clock.tick(FPS)
             self.events()
             self.update()
             self.draw()
+
+        pg.mixer.music.fadeout(800)
 
     def update(self):
         # game loop - update
@@ -130,7 +142,7 @@ class Game:
 
         # check losing condition : Being hit by an enemy
         enemy_hits = pg.sprite.spritecollideany(self.player, self.enemies, False)
-        if enemy_hits:
+        if enemy_hits!=None:
             if self.player.shield:
                 enemy_hits.kill()
                 self.player.shield = False
@@ -217,6 +229,11 @@ class Game:
 
     def show_start_screen(self):
         #game start/splash screen
+
+        #Music
+        pg.mixer.music.load(os.path.join(self.snd_dir, "Splash_Screen.ogg"))
+        pg.mixer.music.play(loops=-1)
+
         self.screen.blit(self.splash_bkgd, (self.x_splash_bkgd, 0))
         self.draw_text(TITLE, 36, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 4)
         self.draw_text("Player 1 - use LEFT, RIGHT and UP arrows to MOVE the ball", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2)
@@ -225,8 +242,14 @@ class Game:
         pg.display.flip()
         self.wait_for_key()
 
+        pg.mixer.music.fadeout(500)
+
     def show_go_screen(self):
         # game over/continue
+
+        pg.mixer.music.load(os.path.join(self.snd_dir, "Game_Over.ogg"))
+        pg.mixer.music.play(loops=-1)
+
         self.screen.blit(self.end_bkgd, (self.x_end_bkgd, 0))
         self.draw_text("GAME OVER", 48, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 4)
         self.draw_text("Score: "+str(self.score), 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2)
@@ -242,6 +265,8 @@ class Game:
         self.draw_text("Press a key to play again", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT * 3 / 4)
         pg.display.flip()
         self.wait_for_key()
+
+        pg.mixer.music.fadeout(500)
     
     def draw_text(self, text, size, color, x, y):
         font = pg.font.Font(self.font_name, size)
