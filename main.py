@@ -100,7 +100,7 @@ class Game:
                 #if the ball is in the widht of the platform and reached the top of the platform, then stop it
                 if self.player.pos.x < lowest.rect.right+8 and self.player.pos.x > lowest.rect.left-8:
                     if self.player.pos.y < lowest.rect.bottom:
-                        self.player.pos.y = lowest.rect.top
+                        self.player.pos.y = lowest.rect.top+lowest.rect.height/2
                         self.player.vel.y = 0
                         self.player.jumping = False
 
@@ -197,7 +197,7 @@ class Game:
         self.screen.blit(self.splash_bkgd, (self.x_splash_bkgd, 0))
         self.draw_text("Welcome to "+TITLE, 48, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 4)
         self.draw_text("Player 1 - use LEFT, RIGHT and UP arrows to MOVE the ball", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT / 2)
-        self.draw_text("Player 2 - DRAG your MOUSE to DRAW platforms and guide the ball to victory!", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT * 3 / 4)
+        self.draw_text("Player 2 - DRAG your MOUSE to DRAW platforms and RIGHT click to SHIELD!", 22, (255,255,255), self.SCREEN_WIDTH / 2, self.SCREEN_HEIGHT * 3 / 4)
         pg.display.flip()
         self.wait_for_key()
 

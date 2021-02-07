@@ -15,9 +15,10 @@ class Player(pg.sprite.Sprite):
         self.SCREEN_WIDTH = game.SCREEN_WIDTH
         self.SCREEN_HEIGHT = game.SCREEN_HEIGHT
 
-        self.image = pg.image.load(os.path.join(IMAGE_DIR, "ball64.png")).convert()
+        self.image = pg.image.load(os.path.join(IMAGE_DIR, "cuteMoon.png")).convert()
         # .set_colorkey() indicates the color pg will render as transparent
         self.image.set_colorkey((255, 255, 255), pg.RLEACCEL)
+        self.image = pg.transform.scale(self.image, (64, 64))
 
         self.rect = self.image.get_rect()
         self.rect.center = (self.SCREEN_WIDTH/2, self.SCREEN_HEIGHT/2)
@@ -43,11 +44,13 @@ class Player(pg.sprite.Sprite):
             self.shield = False
 
         if self.shield:
-            self.image = pg.image.load(os.path.join(IMAGE_DIR, "ball-shield.png")).convert()
+            self.image = pg.image.load(os.path.join(IMAGE_DIR, "cuteMoon-shield.png")).convert()
             self.image.set_colorkey((255, 255, 255), pg.RLEACCEL)
+            self.image = pg.transform.scale(self.image, (64, 64))
         else:
-            self.image = pg.image.load(os.path.join(IMAGE_DIR, "ball64.png")).convert()
+            self.image = pg.image.load(os.path.join(IMAGE_DIR, "cuteMoon.png")).convert()
             self.image.set_colorkey((255, 255, 255), pg.RLEACCEL)
+            self.image = pg.transform.scale(self.image, (64, 64))
 
         # acceleration is downward unless certain keys are pressed
         self.acc = v(0, BALL_GRAVITY)
@@ -96,12 +99,27 @@ class Clouds(pg.sprite.Sprite):
         self._layer = 1
         self.groups = game.all_sprites, game.platforms
         pg.sprite.Sprite.__init__(self, self.groups)
-        width = abs(pos_1[0] - pos_2[0])
-        height = abs(pos_1[1] - pos_2[1])
 
-        self.image = pg.Surface((width, height))
-        self.image.fill((255, 255, 0))
+        width = int(abs(pos_1[0] - pos_2[0]))
+        height = int(abs(pos_1[1] - pos_2[1]))
+
+        if width < CLOUD_WIDTH_MIN:
+            width = CLOUD_WIDTH_MIN
+
+        if width > CLOUD_WIDTH_MAX:
+            width = CLOUD_WIDTH_MAX
+
+        height = int(width * 0.6)
+
+
+        self.image = pg.image.load(os.path.join(IMAGE_DIR, "cloud.png")).convert()
+        # .set_colorkey() indicates the color pg will render as transparent
+        self.image.set_colorkey((0, 0, 0), pg.RLEACCEL)
+
+        self.image = pg.transform.scale(self.image, (width, height))
+
         self.rect = self.image.get_rect()
+
         self.rect.x = pos_1[0]
         self.rect.y = pos_1[1]
 
