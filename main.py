@@ -80,6 +80,11 @@ class Game:
         self.enemy_bullet_timer = ENEMY_SPAWN_DELAY
         self.enemy_lander_timer = ENEMY_SPAWN_DELAY
 
+        self.MIN_LANDERS = MIN_LANDERS
+        self.MAX_LANDERS = MAX_LANDERS
+
+        self.increase_time = 200
+
         self.player = Player(self)
 
         # create a list of platform
@@ -148,7 +153,7 @@ class Game:
         if enemy_hits!=None:
             if self.player.shield:
                 enemy_hits.kill()
-                self.player.shield = False
+                #self.player.shield = False
             else:
                 self.playing = False
 
@@ -299,7 +304,7 @@ class Game:
             space = 32*n_enemies
 
             x_coord = None
-            y_coord = random.randint(0,self.SCREEN_HEIGHT-space)
+            y_coord = random.randint(ENEMY_SIZE,self.SCREEN_HEIGHT-space)
             
             speed = random.randint(MIN_SPEED_X, MAX_SPEED_X)
 
@@ -321,20 +326,33 @@ class Game:
     def create_Enemies_Landers(self):
         now = pg.time.get_ticks()
         
-        if now-self.start_game_timer>15000:
+        if now-self.start_game_timer>LANDER_SPAWN_DELAY:
             if now - self.enemy_lander_timer > LANDER_SPAWN_TIME + random.choice([-1500,-1000,-500,0,500,1000,1500]):
 
                 self.enemy_lander_timer = now
-                n_enemies = random.randint(MIN_LANDERS,MAX_LANDERS)
+                
+                if now-self.start_game_timer>self.increase_time:
+                    self.increase_time += self.increase_time*3/4
+                    self.MIN_LANDERS += 1
+                    self.MAX_LANDERS += 1
+                
+                n_enemies = random.randint(self.MIN_LANDERS,self.MAX_LANDERS)
+                if(n_enemies>MAX_LANDERS_TOT):
+                    n_enemies = MAX_LANDERS_TOT
+
+                
                 #space = ENEMY_SIZE*n_enemies
 
                 info = {}
                 info['image'] = "lander.png"
                 info['direction'] = 'bottom'
-
+                left_margin = ENEMY_SIZE
                 for i in range(n_enemies):
-                    info['coordinates'] = (random.randint(0,self.SCREEN_WIDTH-ENEMY_SIZE), 0)
+                    right_margin = int((self.SCREEN_WIDTH)/(n_enemies-i))+left_margin
+                    print(left_margin, right_margin)
+                    info['coordinates'] = (random.randint(left_margin, right_margin), 0)
                     info['speed'] = random.randint(MIN_SPEED_X+2, MAX_SPEED_X+2)
+                    left_margin = int(right_margin+ENEMY_SIZE)
                     Enemy(self,info)
 
 g = Game()
