@@ -15,13 +15,15 @@ class Player(pg.sprite.Sprite):
         self.SCREEN_WIDTH = game.SCREEN_WIDTH
         self.SCREEN_HEIGHT = game.SCREEN_HEIGHT
 
-        self.image = pg.image.load(os.path.join(
-            IMAGE_DIR, "ball64.png")).convert()
+        self.image = pg.image.load(os.path.join(IMAGE_DIR, "ball64.png")).convert()
         # .set_colorkey() indicates the color pg will render as transparent
         self.image.set_colorkey((255, 255, 255), pg.RLEACCEL)
 
         self.rect = self.image.get_rect()
         self.rect.center = (self.SCREEN_WIDTH/2, self.SCREEN_HEIGHT/2)
+
+        self.shield = False
+        self.shield_activation = -SHIELD_COOLDOWN
 
         # position of the ball
         self.pos = v(self.SCREEN_WIDTH/2, self.SCREEN_HEIGHT/2)
@@ -35,6 +37,17 @@ class Player(pg.sprite.Sprite):
     # Move the sprite based on user keypresses
 
     def update(self):
+        #Check the shield timer
+        now = pg.time.get_ticks()
+        if now - self.shield_activation > SHIELD_DURATION:
+            self.shield = False
+
+        if self.shield:
+            self.image = pg.image.load(os.path.join(IMAGE_DIR, "ball-shield.png")).convert()
+            self.image.set_colorkey((255, 255, 255), pg.RLEACCEL)
+        else:
+            self.image = pg.image.load(os.path.join(IMAGE_DIR, "ball64.png")).convert()
+            self.image.set_colorkey((255, 255, 255), pg.RLEACCEL)
 
         # acceleration is downward unless certain keys are pressed
         self.acc = v(0, BALL_GRAVITY)

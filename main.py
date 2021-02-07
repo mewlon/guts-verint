@@ -109,9 +109,13 @@ class Game:
             self.playing = False
 
         # check losing condition : Being hit by an enemy
-        enemy_hits = pg.sprite.spritecollide(self.player, self.enemies, False)
+        enemy_hits = pg.sprite.spritecollideany(self.player, self.enemies, False)
         if enemy_hits:
-            self.playing = False
+            if self.player.shield:
+                enemy_hits.kill()
+                self.player.shield = False
+            else:
+                self.playing = False
 
     def events(self):
         # game loop - events
@@ -139,24 +143,36 @@ class Game:
                 if event.key == pg.K_UP:
                     self.player.jump_cut()
 
-            if event.type == pg.MOUSEBUTTONDOWN:
-                self.pos_1 = pg.mouse.get_pos()
+            if event.type == pg.MOUSEBUTTONDOWN: 
+                #if the mouse button equals LEFT
+                if event.button == 1:
+                    self.pos_1 = pg.mouse.get_pos()
+                #if the mouse button equals Right
+                if event.button == 3:
+                    now = pg.time.get_ticks()
+                    if now - self.player.shield_activation > SHIELD_COOLDOWN:
+                        self.player.shield_activation = pg.time.get_ticks()
+                        self.player.shield = True
 
-            if event.type == pg.MOUSEBUTTONUP:
-                pos_2 = pg.mouse.get_pos()
 
-                Clouds(self, self.pos_1, pos_2)
+            #Draw platforms
+            if event.type == pg.MOUSEBUTTONUP: 
+                #if the mouse button equals LEFT
+                if event.button == 1:
+                    pos_2 = pg.mouse.get_pos()
 
-                if len(self.platforms)>3:
+                    Clouds(self, self.pos_1, pos_2)
 
-                    lower = pg.time.get_ticks()
-                    toKill = None
-                    for cloud in self.platforms:
-                        if cloud.creation_time < lower:
-                            toKill = cloud
-                            lower = cloud.creation_time
-                    
-                    toKill.kill()
+                    if len(self.platforms)>3:
+
+                        lower = pg.time.get_ticks()
+                        toKill = None
+                        for cloud in self.platforms:
+                            if cloud.creation_time < lower:
+                                toKill = cloud
+                                lower = cloud.creation_time
+                        
+                        toKill.kill()
                 
 
     def draw(self):
