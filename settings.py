@@ -1,8 +1,8 @@
 #Game settings
 IMAGE_DIR = "Images"
-TITLE = "Save A Ball!"
+TITLE = "SAVE THE MOON!"
 FPS = 60
-SCORES_FILE = "scores.txt"
+SCORES_FILE = "best_scores.txt"
 
 #Ball properties
 BALL_ACC = 0.5

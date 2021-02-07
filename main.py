@@ -24,7 +24,8 @@ class Game:
 
         #Title and Icon
         pg.display.set_caption(TITLE)
-        icon = pg.image.load(os.path.join(IMAGE_DIR, "ball-icon.png"))
+        icon = pg.image.load(os.path.join(IMAGE_DIR, "cuteMoon.png"))
+        icon.set_colorkey((255, 255, 255), pg.RLEACCEL)
         pg.display.set_icon(icon)
 
         # Setup the clock
@@ -69,8 +70,7 @@ class Game:
         self.player = Player(self)
 
         # create a list of platform
-        self.platform_list = [((self.SCREEN_WIDTH/2 - 50, self.SCREEN_HEIGHT*3/4-10), (self.SCREEN_WIDTH/2 + 50, self.SCREEN_HEIGHT*3/4+10)),
-                              ((0, self.SCREEN_HEIGHT-20), (self.SCREEN_WIDTH/2, self.SCREEN_HEIGHT+20))]
+        self.platform_list = [((self.SCREEN_WIDTH/2 - 100, self.SCREEN_HEIGHT*3/4-10), (self.SCREEN_WIDTH/2 + 100, self.SCREEN_HEIGHT*3/4+10))]
 
         for plat in self.platform_list:
             Clouds(self, *plat)
