@@ -31,6 +31,9 @@ class Game:
         # Setup the clock
         self.clock = pg.time.Clock()
 
+        #load HighScore
+        self.load_data()
+
         #position background in correct place
         self.x_bkgd = 0
 
@@ -48,8 +51,7 @@ class Game:
 
         self.running = True
 
-        self.load_data()
-
+        
     def load_data(self):
         self.dir = os.path.dirname(__file__)
         with open(os.path.join(self.dir, SCORES_FILE), 'w') as f:
@@ -121,7 +123,7 @@ class Game:
             self.playing = False
 
         # check losing condition : Being hit by an enemy
-        enemy_hits = pg.sprite.spritecollide(self.player, self.enemies, False)
+        enemy_hits = pg.sprite.spritecollideany(self.player, self.enemies, False)
         if enemy_hits:
             if self.player.shield:
                 enemy_hits.kill()
