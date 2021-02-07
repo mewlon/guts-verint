@@ -2,6 +2,7 @@
 IMAGE_DIR = "Images"
 TITLE = "Save A Ball!"
 FPS = 60
+SCORES_FILE = "scores.txt"
 
 #Ball properties
 BALL_ACC = 0.5

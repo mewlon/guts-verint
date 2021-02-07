@@ -121,7 +121,7 @@ class Game:
             self.playing = False
 
         # check losing condition : Being hit by an enemy
-        enemy_hits = pg.sprite.spritecollideany(self.player, self.enemies, False)
+        enemy_hits = pg.sprite.spritecollide(self.player, self.enemies, False)
         if enemy_hits:
             if self.player.shield:
                 enemy_hits.kill()
